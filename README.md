@@ -10,4 +10,3 @@ The goal is to build reproducible experiments, starting from classical swarm beh
 - `nn-behaviors/` – Traditional neural network-based swarm behaviors
 - `notes/` – Research notes and observations
 
-This work is independent and does not include restricted or proprietary lab code.
