@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Dict, Any
 import numpy as np
 
 from swarmsim.world.RectangularWorld import RectangularWorld, RectangularWorldConfig
@@ -21,7 +20,7 @@ class EpisodeData:
     positions: np.ndarray
 
 
-def make_world(config: Dict[str, Any]) -> RectangularWorld:
+def make_world() -> RectangularWorld:
     #generic RSS world creation 
     world_config = RectangularWorldConfig(
         size=[10, 10],
@@ -34,7 +33,7 @@ def make_world(config: Dict[str, Any]) -> RectangularWorld:
         position=(5, 5),
         agent_radius=0.1,
     )
-    template_agent = MazeAgent(agent_cfg, world)
+    template_agent = MazeAgentAgent = MazeAgent(agent_cfg, world)
 
     #placeholder
     template_agent.controller = StaticController(output=[0.0, 0.0])
@@ -72,10 +71,10 @@ def collect_positions(world) -> np.ndarray:
     return np.array(pos, dtype=np.float32)
 
 
-def run_episode(genome, config: Dict[str, Any]) -> EpisodeData:
+def run_episode(genome) -> EpisodeData:
     T = T_STEPS
 
-    world = make_world(config)
+    world = make_world()
 
     #attach evolved controller to each spawned agent
     for agent in world.population:
