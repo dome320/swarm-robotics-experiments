@@ -30,7 +30,8 @@ W_COHERENCE = 0.6
 W_RADIUS = 0.4
 
 # Penalties / thresholds
-MIN_MEAN_RADIUS = 0.10          # discourage collapsing to centroid
+MIN_MEAN_RADIUS = 0.30          # discourage collapsing to centroid (increased from 0.10)
+COLLAPSE_EXP = 6                # makes collapse MUCH more expensive
 MAX_CENTROID_DRIFT = 3.0        # world-size dependent (10x10 world → 3 is moderate)
 DRIFT_PENALTY_WEIGHT = 0.25     # how strong to penalize drifting swarms
 
@@ -116,9 +117,10 @@ def radius_scores(positions: np.ndarray) -> np.ndarray:
     # Penalize collapsing into centroid (mean radius too small)
     collapse_mask = mean_R < MIN_MEAN_RADIUS
     if np.any(collapse_mask):
-        # smoothly reduce score toward 0 when collapsed
+        # MUCH harsher penalty: ratio^COLLAPSE_EXP quickly drives score toward ~0
         score = score.copy()
-        score[collapse_mask] *= (mean_R[collapse_mask] / (MIN_MEAN_RADIUS + EPS))
+        ratio = mean_R[collapse_mask] / (MIN_MEAN_RADIUS + EPS)
+        score[collapse_mask] *= np.power(ratio, COLLAPSE_EXP)
 
     return score
 
