@@ -29,7 +29,7 @@ class MillingNNController(Controller, nn.Module):
         x = F.relu(self.fc2(x))
         return self.out(x)
 
-    def get_actions(self): #Called automatically by MazeAgent.step()
+    def get_actions(self, agent): #Called automatically by MazeAgent.step()
         
         #BinaryFOVSensor must already on
         h = self.agent.sensors[0].current_state
