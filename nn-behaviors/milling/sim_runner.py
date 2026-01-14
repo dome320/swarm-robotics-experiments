@@ -33,7 +33,7 @@ def make_world() -> RectangularWorld:
         position=(5, 5),
         agent_radius=0.1,
     )
-    template_agent = MazeAgentAgent = MazeAgent(agent_cfg, world)
+    template_agent = MazeAgent(agent_cfg, world)
 
     #placeholder
     template_agent.controller = StaticController(output=[0.0, 0.0])
