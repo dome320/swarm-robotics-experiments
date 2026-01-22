@@ -20,10 +20,12 @@ class LevyWalkController(Controller):
         alpha=1.5,              #tail exponent
         min_run_steps=15,       #minimum straight-run length (in simulation steps)
         turn_steps_range=(5, 20),
-        seed=None,
+        seed = None,
     ):
         super().__init__(agent)
-        self._rng = random.Random(seed)
+        seed = random.randint(1, 1000)
+        agent_hash = hash(agent.name)
+        self._rng = random.Random(seed + agent_hash)
 
         self.v = forward_speed
         self.max_w = max_turn_rate
@@ -54,12 +56,14 @@ class LevyWalkController(Controller):
         #turning phase
         if self.turn_steps_left > 0:
             self.turn_steps_left -= 1
+            #when the turn finishes, start a new straight run next step
+            if self.turn_steps_left == 0:
+                self._start_new_run()
             return (self.v, self.current_w)
 
-        #if run ended start a new turn + new run
+        #if run ended, start a turn (chagne: do NOT start new run here)
         if self.run_steps_left <= 0:
             self._start_turn()
-            self._start_new_run()
             return (self.v, self.current_w)
 
         #straight run phase
@@ -76,34 +80,28 @@ from swarmsim.world.RectangularWorld import RectangularWorld, RectangularWorldCo
 world_config = RectangularWorldConfig(size=[10, 10], time_step=1 / 40)
 world = RectangularWorld(world_config)
 
-#agent Template
+# Manually create and add multiple agents
 from swarmsim.agent.MazeAgent import MazeAgent, MazeAgentConfig
-agent_config = MazeAgentConfig(position=(5, 5), agent_radius=0.1)
-agent = MazeAgent(agent_config, world)
 
-#attach levy controller
-agent.controller = LevyWalkController(
-    agent,
-    forward_speed=0.02,
-    max_turn_rate=2.0,
-    alpha=1.5,
-    min_run_steps=10
-)
+agents = []
 
+for i in range(6):
+    agent_config = MazeAgentConfig(
+        position=(5, 5),      # same start position (they'll separate naturally)
+        agent_radius=0.1
+    )
+    agent = MazeAgent(agent_config, world)
 
-#use Spanwer to spawn multiple agents
-from swarmsim.world.spawners.AgentSpawner import PointAgentSpawner
+    agent.controller = LevyWalkController(
+        agent,
+        forward_speed=0.02,
+        max_turn_rate=2.0,
+        alpha=1.5,
+        min_run_steps=10
+    )
 
-spawner = PointAgentSpawner(
-    world,
-    n=8,                 
-    facing="away",
-    avoid_overlap=True,
-    agent=agent,        
-    mode="oneshot",
-)
-
-world.spawners.append(spawner)
+    world.population.append(agent)
+    agents.append(agent)
 
 #start simulation
 from swarmsim.world.simulate import main as sim
