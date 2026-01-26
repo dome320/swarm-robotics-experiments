@@ -29,9 +29,6 @@ def make_world() -> RectangularWorld:
         size=[10, 10],
         time_step=1/40,
     )
-    world_config.metrics = [
-        metrics.Circliness(history=T_STEPS, avg_history_max=450),
-    ]
     world = RectangularWorld(world_config)
 
     #template for angents which spawner clones
@@ -80,20 +77,30 @@ def collect_positions(world) -> np.ndarray:
 def run_episode(genome) -> float:
     world = make_world()
 
-    # attach evolved controller
+    #attach evolved controller
     for agent in world.population:
         agent.controller = MillingNNController(agent, genome)
 
-    # run simulation
+    #attach metrics 
+    circ = metrics.Circliness(history=T_STEPS, avg_history_max=450)
+
+    # bind it
+    circ.population = world.population
+
+    world.metrics = [circ]
+
+    #run sim 
     for _ in range(T_STEPS):
         world.step()
 
-
-    # return RSS circliness fitness
     return extract_circliness(world)
 
+
 def extract_circliness(world) -> float:
+    if not world.metrics:
+        return 0.0
     m = world.metrics[0]
-    return float(getattr(m, "average", m.value))
+    return float(m.average if getattr(m, "instantaneous", False) else m.value)
+
 
 

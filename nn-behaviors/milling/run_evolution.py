@@ -43,7 +43,7 @@ def main():
                 best_score = score
                 improved = True
 
-        print(f"Gen {gen:02d} | best = {best_score:.4f} | score = {score} | improved = {improved}")
+        print(f"Gen {gen:02d} | best = {best_score:.4f} | improved = {improved}")
 
     np.save("best_genome.npy", best_genome)
     print("\nSaved best genome to best_genome.npy")
