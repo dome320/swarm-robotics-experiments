@@ -2,7 +2,6 @@
 import numpy as np
 
 from sim_runner import run_episode
-from fitness_milling import milling_fitness
 
 
 #hard coded evolution settings 
@@ -11,8 +10,8 @@ NUM_PARAMS = (8*8 + 8) + (8*9 + 9) + (9*2 + 2)
 GENERATIONS = 50
 CHILDREN_PER_GEN = 20
 
-SIGMA = 0.1
-INIT_SCALE = 0.1
+SIGMA = 0.2
+INIT_SCALE = 0.3
 
 SEED = 41
 
@@ -25,9 +24,7 @@ def main():
         0.0, INIT_SCALE, size=NUM_PARAMS
     ).astype(np.float32)
 
-    best_score = milling_fitness(
-        run_episode(best_genome).positions
-    )
+    best_score = run_episode(best_genome)
 
     print(f"Initial fitness: {best_score:.4f}")
 
@@ -39,16 +36,14 @@ def main():
                 0.0, SIGMA, size=NUM_PARAMS
             ).astype(np.float32)
 
-            score = milling_fitness(
-                run_episode(child).positions
-            )
+            score = run_episode(child)
 
             if score > best_score:
                 best_genome = child
                 best_score = score
                 improved = True
 
-        print(f"Gen {gen:02d} | best = {best_score:.4f} | improved = {improved}")
+        print(f"Gen {gen:02d} | best = {best_score:.4f} | score = {score} | improved = {improved}")
 
     np.save("best_genome.npy", best_genome)
     print("\nSaved best genome to best_genome.npy")

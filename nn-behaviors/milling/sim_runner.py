@@ -9,6 +9,9 @@ from swarmsim.agent.control.StaticController import StaticController
 
 from controller_nn import MillingNNController
 
+from swarmsim import metrics
+
+
 
 # hard coded parameters for now but could be changed later
 N_AGENTS = 6
@@ -26,6 +29,9 @@ def make_world() -> RectangularWorld:
         size=[10, 10],
         time_step=1/40,
     )
+    world_config.metrics = [
+        metrics.Circliness(history=T_STEPS, avg_history_max=450),
+    ]
     world = RectangularWorld(world_config)
 
     #template for angents which spawner clones
@@ -71,20 +77,23 @@ def collect_positions(world) -> np.ndarray:
     return np.array(pos, dtype=np.float32)
 
 
-def run_episode(genome) -> EpisodeData:
-    T = T_STEPS
-
+def run_episode(genome) -> float:
     world = make_world()
 
-    #attach evolved controller to each spawned agent
+    # attach evolved controller
     for agent in world.population:
         agent.controller = MillingNNController(agent, genome)
 
-    N = len(world.population)
-    positions = np.zeros((T, N, 2), dtype=np.float32)
-
-    for t in range(T):
-        positions[t] = collect_positions(world)
+    # run simulation
+    for _ in range(T_STEPS):
         world.step()
 
-    return EpisodeData(positions=positions)
+
+    # return RSS circliness fitness
+    return extract_circliness(world)
+
+def extract_circliness(world) -> float:
+    m = world.metrics[0]
+    return float(getattr(m, "average", m.value))
+
+
